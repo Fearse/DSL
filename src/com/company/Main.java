@@ -25,6 +25,9 @@ public class Main {
 	String s=checkFile();
 	System.out.println(s);
 	Lexer lexer=new Lexer(s);
-	lexer.analyze();
+	Parser parser=new Parser(lexer.analyze());
+	RootNode root=parser.parseTokens();
+	for(int i = 0; i<root.codeStr.size(); i++)
+		System.out.println(root.codeStr.get(i));
     }
 }

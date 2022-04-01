@@ -4,26 +4,31 @@ public class TokenType {
     String typeName;
     String reg;
     public static TokenType[] tokenTypeList={
-            new TokenType("Number", "^0|[1-9][0-9]*"),
+            new TokenType("Number", "^0|[1-9][0-9]*"),//0
+            //добавить float
 
-            new TokenType("Space", "\\ "),
-            new TokenType("EndL", "[\\n]"),
-            new TokenType("Karetka", "[\\r]"),
+            new TokenType("Space", "\\ "),//1
+            new TokenType("EndL", "[\\n]"),//2
+            new TokenType("Karetka", "[\\r]"),//3
 
-            new TokenType("Assign", "[=]"),
-            new TokenType("Plus", "[+]"),
-            new TokenType("Minus", "[-]"),
-            new TokenType("Multiply", "[*]"),
-            new TokenType("Division", "[/]"),
+            new TokenType("Assign", "[=]"),//4
+            new TokenType("Plus", "[+]"),//5
+            new TokenType("Minus", "[-]"),//6
+            new TokenType("Multiply", "[*]"),//7 (ne realizovano)
+            new TokenType("Division", "[/]"),//8 (ne realizovano)
 
-            new TokenType("Print", "(?i)print"),
-            new TokenType("For", "(?i)for"),
+            new TokenType("Print", "(?i)print"),//9
+            new TokenType("For", "(?i)for"),//10 (ne realizovano)
+           // new TokenType("While","(?i)while"), (ne realizovano)
 
-            new TokenType("END", "[;]"),
-            new TokenType("LPAR", "[(]"),
-            new TokenType("RPAR", "[)]"),
+            new TokenType("END", "[;]"),//11
+            new TokenType("LPAR", "[(]"),//12
+            new TokenType("RPAR", "[)]"),//13
 
-            new TokenType("Variable", "[a-z][a-z]*"),
+            new TokenType("Variable", "[a-z][a-z]*"),//14
+            //нужны ли строки??
+            //По-умному оформить массив токентайпов
+            //Объявление типов переменной????
     };
     public TokenType(String typeName, String reg) {
         this.typeName = typeName;

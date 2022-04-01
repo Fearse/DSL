@@ -1,7 +1,6 @@
 package com.company;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,11 +12,11 @@ public class Lexer {
     public Lexer(String code) {
         this.code = code;
     }
-    public List<Token> analyze(){
-        while(findTokens()){}
-        for (int i=0;i<tokenList.size();i++)
-            if (!(tokenList.get(i).value.equals(" ")||tokenList.get(i).value.equals("\\r")))
-                System.out.println(tokenList.get(i).type.typeName+" "+tokenList.get(i).value+" "+tokenList.get(i).pos);
+    public ArrayList<Token> analyze(){
+        while(findTokens())
+        for (Token token : tokenList)
+            if (!(token.value.equals(" ") || token.value.equals("\\r")))
+                System.out.println(token.type.typeName + " " + token.value + " " + token.pos);
         return this.tokenList;
     }
     public boolean findTokens(){
@@ -43,6 +42,7 @@ public class Lexer {
                 }
                 if (is_new) {
                     this.pos += result.length();
+                    if(token.type!=TokenType.tokenTypeList[3]&&token.type!=TokenType.tokenTypeList[2]&&token.type!=TokenType.tokenTypeList[1])
                     tokenList.add(token);
                 }
                 return true;
