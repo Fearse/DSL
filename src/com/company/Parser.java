@@ -32,17 +32,17 @@ public class Parser {
             pos++;
             return new NumberNode(tokens.get(pos-1));
         }
-        if (TokenType.tokenTypeList[14].equals(tokens.get(pos).type)){
+        if (TokenType.tokenTypeList[20].equals(tokens.get(pos).type)){
             pos++;
             return new VarNode(tokens.get(pos-1));
         }
          throw new Error("Ожидается переменная или число на позиции: "+pos);
     }
     public Node parsePar(){
-        if (TokenType.tokenTypeList[12].equals(tokens.get(pos).type)) {
+        if (TokenType.tokenTypeList[16].equals(tokens.get(pos).type)) {
             pos++;
             Node node = parseFormula();
-            need(new TokenType[]{TokenType.tokenTypeList[13]});
+            need(new TokenType[]{TokenType.tokenTypeList[17]});
             return node;
         }
         else
@@ -59,7 +59,7 @@ public class Parser {
        return leftVal;
    }
     public Node parseString(){
-       if (TokenType.tokenTypeList[14].equals(tokens.get(pos).type)) {
+       if (TokenType.tokenTypeList[20].equals(tokens.get(pos).type)) {
            Node varNode = parseVarNum();
            Token assign = receive(new TokenType[]{TokenType.tokenTypeList[4]});
            if (assign != null) {
@@ -68,18 +68,68 @@ public class Parser {
            }
            throw new Error("После переменной ожидается = на позиции:"+pos);
        }
-       else if (TokenType.tokenTypeList[9].equals(tokens.get(pos).type)){
+       else if (TokenType.tokenTypeList[12].equals(tokens.get(pos).type)){
            pos++;
-           return new UnOpNode(tokens.get(pos-1), this.parseFormula());//тк можно вывести не только число/вар, но и формулу
+           return new UnOpNode(tokens.get(pos-1), this.parseFormula());
        }
-       //добавить while
-       throw new Error("Ошибка");
+       else if(TokenType.tokenTypeList[14].equals(tokens.get(pos).type)){
+           pos++;
+           return  parseWhile();
+       }
+       else if(TokenType.tokenTypeList[13].equals(tokens.get(pos).type))
+       {
+           pos++;
+           return parseFor();
+       }
+       throw new Error("Ошибка на позиции: "+pos+". Ожидалось действие или переменная");
    }
+    public Node parseFor(){
+       Node leftVal=parseFormula();
+       Token operator=receive(new TokenType[]{TokenType.tokenTypeList[9],TokenType.tokenTypeList[10],TokenType.tokenTypeList[11]});
+       Node rightVal=parseFormula();
+
+       need(new TokenType[]{TokenType.tokenTypeList[15]});
+
+       Node varNode = parseVarNum();
+       Token assign = receive(new TokenType[]{TokenType.tokenTypeList[4]});
+       Node rightActVal = parseFormula();
+       BinOpNode action= new BinOpNode(assign, varNode, rightActVal);
+       if (assign == null)
+           throw new Error("После переменной ожидается = на позиции:"+pos);
+       ForNode forNode= new ForNode(operator,leftVal,rightVal,action);
+       need(new TokenType[]{TokenType.tokenTypeList[18]});
+       while(!TokenType.tokenTypeList[19].equals(tokens.get(pos).type)) {
+           forNode.addOperations(getOperations());
+           if (pos==tokens.size())
+               throw new Error("Ошибка, ожидалось }");
+       }
+       pos++;
+       return forNode;
+   }
+    public Node parseWhile(){
+        Node leftVal=parseFormula();
+        Token operator=receive(new TokenType[]{TokenType.tokenTypeList[9],TokenType.tokenTypeList[10],TokenType.tokenTypeList[11]});
+        Node rightVal=parseFormula();
+        WhileNode whileNode=new WhileNode(operator,leftVal,rightVal);
+        need(new TokenType[]{TokenType.tokenTypeList[18]});
+        while(!TokenType.tokenTypeList[19].equals(tokens.get(pos).type)) {
+            whileNode.addOperations(getOperations());
+            if (pos==tokens.size())
+                throw new Error("Ошибка, ожидалось }");
+        }
+        pos++;
+        return whileNode;
+    }
+    public Node getOperations(){
+        Node codeStringNode=parseString();
+        need(new TokenType[]{TokenType.tokenTypeList[15]});//;
+        return codeStringNode;
+    }
     public RootNode parseTokens(){
         RootNode root=new RootNode();
         while (pos<tokens.size()){
             Node codeStringNode= parseString();
-            need(new TokenType[]{TokenType.tokenTypeList[11]});//;
+            need(new TokenType[]{TokenType.tokenTypeList[15]});//;
             root.addNode(codeStringNode);
         }
         return root;

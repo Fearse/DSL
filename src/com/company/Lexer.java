@@ -13,7 +13,7 @@ public class Lexer {
         this.code = code;
     }
     public ArrayList<Token> analyze(){
-        while(findTokens())
+        while(findTokens()){}
         for (Token token : tokenList)
             if (!(token.value.equals(" ") || token.value.equals("\\r")))
                 System.out.println(token.type.typeName + " " + token.value + " " + token.pos);
@@ -50,4 +50,5 @@ public class Lexer {
         }
         throw new Error("Error on pos: "+this.pos);
     }
+
 }
