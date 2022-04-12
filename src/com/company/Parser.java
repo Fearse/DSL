@@ -9,74 +9,84 @@ public class Parser {
     public Parser(ArrayList<Token> tokens) {
         this.tokens = tokens;
     }
-    public Token receive(TokenType[] need){
+    public Token receive(String[] need){
         Token curToken;
         if (pos<tokens.size()) {
             curToken = tokens.get(pos);
-            for (TokenType tokenType : need)
-                if (tokenType.typeName.equals(curToken.type.typeName)) {
+            for (String tokenTypeName : need)
+                if (tokenTypeName.equals(curToken.type.typeName)) {
                     pos++;
                     return curToken;
                 }
         }
         return null;
     }
-    public void need(TokenType[] expected){
+    public void need(String[] expected){
         Token token= receive(expected);
         if(token==null){
-            throw new Error("На позииции "+pos+" ожидается "+expected[0].typeName);
+            throw new Error("На позииции "+pos+" ожидается "+expected[0]);
         }
     }
     public Node parseVarNum(){
-        if (TokenType.tokenTypeList[0].equals(tokens.get(pos).type)){
+        if (tokens.get(pos).type.typeName.equals("NUM")){
             pos++;
             return new NumberNode(tokens.get(pos-1));
         }
-        if (TokenType.tokenTypeList[20].equals(tokens.get(pos).type)){
+        if (tokens.get(pos).type.typeName.equals("VAR")){
             pos++;
             return new VarNode(tokens.get(pos-1));
         }
          throw new Error("Ожидается переменная или число на позиции: "+pos);
     }
     public Node parsePar(){
-        if (TokenType.tokenTypeList[16].equals(tokens.get(pos).type)) {
+        if (tokens.get(pos).type.typeName.equals("LPAR")){
             pos++;
             Node node = parseFormula();
-            need(new TokenType[]{TokenType.tokenTypeList[17]});
+            need(new String[]{"RPAR"});
             return node;
         }
         else
             return parseVarNum();
     }
+    public Node parseMultDiv(){
+        Node leftVal= parsePar();
+        Token operator= receive(new String[]{"MULT","DIV"});
+        while (operator!=null){
+            Node rightVal= parsePar();
+            leftVal=new BinOpNode(operator,leftVal,rightVal);
+            operator= receive(new String[]{"MULT","DIV"});
+        }
+        return leftVal;
+    }
     public Node parseFormula(){
-       Node leftVal= parsePar();
-       Token operator= receive(new TokenType[]{TokenType.tokenTypeList[5],TokenType.tokenTypeList[6]});
-       while (operator!=null){
-           Node rightVal= parsePar();
-           leftVal=new BinOpNode(operator,leftVal,rightVal);
-           operator= receive(new TokenType[]{TokenType.tokenTypeList[5],TokenType.tokenTypeList[6]});
-       }
-       return leftVal;
-   }
+        Node leftVal= parseMultDiv();
+        Token operator= receive(new String[]{"PLUS","MINUS"});
+        while (operator!=null){
+            Node rightVal= parseMultDiv();
+            leftVal=new BinOpNode(operator,leftVal,rightVal);
+            operator= receive(new String[]{"PLUS","MINUS"});
+        }
+        return leftVal;
+    }
     public Node parseString(){
-       if (TokenType.tokenTypeList[20].equals(tokens.get(pos).type)) {
+       if (tokens.get(pos).type.typeName.equals("VAR")) {
            Node varNode = parseVarNum();
-           Token assign = receive(new TokenType[]{TokenType.tokenTypeList[4]});
+           Token assign = receive(new String[]{"ASSIGN"});
            if (assign != null) {
                Node rightVal = parseFormula();
                return new BinOpNode(assign, varNode, rightVal);
            }
            throw new Error("После переменной ожидается = на позиции:"+pos);
        }
-       else if (TokenType.tokenTypeList[12].equals(tokens.get(pos).type)){
+       else if (tokens.get(pos).type.typeName.equals("PRINT")){
            pos++;
            return new UnOpNode(tokens.get(pos-1), this.parseFormula());
        }
-       else if(TokenType.tokenTypeList[14].equals(tokens.get(pos).type)){
+       else if(tokens.get(pos).type.typeName.equals("WHILE")){
            pos++;
            return  parseWhile();
        }
-       else if(TokenType.tokenTypeList[13].equals(tokens.get(pos).type))
+       else if(tokens.get(pos).type.typeName.equals("FOR"))
        {
            pos++;
            return parseFor();
@@ -85,20 +95,20 @@ public class Parser {
    }
     public Node parseFor(){
        Node leftVal=parseFormula();
-       Token operator=receive(new TokenType[]{TokenType.tokenTypeList[9],TokenType.tokenTypeList[10],TokenType.tokenTypeList[11]});
+       Token operator=receive(new String[]{"LESS","MORE","EQUAL"});
        Node rightVal=parseFormula();
 
-       need(new TokenType[]{TokenType.tokenTypeList[15]});
+       need(new String[]{"END"});
 
        Node varNode = parseVarNum();
-       Token assign = receive(new TokenType[]{TokenType.tokenTypeList[4]});
+       Token assign = receive(new String[]{"ASSIGN"});
        Node rightActVal = parseFormula();
        BinOpNode action= new BinOpNode(assign, varNode, rightActVal);
        if (assign == null)
            throw new Error("После переменной ожидается = на позиции:"+pos);
        ForNode forNode= new ForNode(operator,leftVal,rightVal,action);
-       need(new TokenType[]{TokenType.tokenTypeList[18]});
-       while(!TokenType.tokenTypeList[19].equals(tokens.get(pos).type)) {
+       need(new String[]{"LRectPar"});
+       while(!tokens.get(pos).type.typeName.equals("RRectPAR")) {
            forNode.addOperations(getOperations());
            if (pos==tokens.size())
                throw new Error("Ошибка, ожидалось }");
@@ -108,11 +118,11 @@ public class Parser {
    }
     public Node parseWhile(){
         Node leftVal=parseFormula();
-        Token operator=receive(new TokenType[]{TokenType.tokenTypeList[9],TokenType.tokenTypeList[10],TokenType.tokenTypeList[11]});
+        Token operator=receive(new String[]{"LESS","MORE","EQUAL"});
         Node rightVal=parseFormula();
         WhileNode whileNode=new WhileNode(operator,leftVal,rightVal);
-        need(new TokenType[]{TokenType.tokenTypeList[18]});
-        while(!TokenType.tokenTypeList[19].equals(tokens.get(pos).type)) {
+        need(new String[]{"LRectPar"});
+        while(!tokens.get(pos).type.typeName.equals("RRectPAR")) {
             whileNode.addOperations(getOperations());
             if (pos==tokens.size())
                 throw new Error("Ошибка, ожидалось }");
@@ -122,14 +132,14 @@ public class Parser {
     }
     public Node getOperations(){
         Node codeStringNode=parseString();
-        need(new TokenType[]{TokenType.tokenTypeList[15]});//;
+        need(new String[]{"END"});
         return codeStringNode;
     }
     public RootNode parseTokens(){
         RootNode root=new RootNode();
         while (pos<tokens.size()){
             Node codeStringNode= parseString();
-            need(new TokenType[]{TokenType.tokenTypeList[15]});//;
+            need(new String[]{"END"});
             root.addNode(codeStringNode);
         }
         return root;

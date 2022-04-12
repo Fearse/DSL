@@ -22,12 +22,14 @@ public class Main {
 	}
 
     public static void main(String[] args) {
-	String s=checkFile();
-	System.out.println(s);
-	Lexer lexer=new Lexer(s);
-	Parser parser=new Parser(lexer.analyze());
-	RootNode root=parser.parseTokens();
-	for(int i = 0; i<root.codeStr.size(); i++)
-		System.out.println(root.codeStr.get(i));
+		String s=checkFile();
+		System.out.println(s);
+		Lexer lexer=new Lexer(s);
+		Parser parser=new Parser(lexer.analyze());
+		RootNode root=parser.parseTokens();
+		Interpreter interpreter =new Interpreter();
+		for(int i = 0; i<root.codeStr.size(); i++) {
+			interpreter.run(root.codeStr.get(i));
+		}
     }
 }
