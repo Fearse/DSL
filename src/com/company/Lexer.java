@@ -29,22 +29,11 @@ public class Lexer {
             Matcher matcher=Pattern.compile(regex).matcher(code);
             if(matcher.find(this.pos)&&matcher.start()==this.pos)
             {
-                boolean is_new=true;
                 String result=this.code.substring(this.pos,this.pos+matcher.group().length());
                 Token token = new Token(tokenType, result, this.pos);
-               for(int j=0;j<tokenList.size();j++)
-                {
-                    if (tokenList.get(j).value.equals(token.value)&&tokenList.get(j).pos==token.pos)
-                    {
-                        is_new=false;
-                        break;
-                    }
-                }
-                if (is_new) {
-                    this.pos += result.length();
-                    if(token.type!=TokenType.tokenTypeList[3]&&token.type!=TokenType.tokenTypeList[2]&&token.type!=TokenType.tokenTypeList[1])
+                this.pos += result.length();
+                if(token.type!=TokenType.tokenTypeList[3]&&token.type!=TokenType.tokenTypeList[2]&&token.type!=TokenType.tokenTypeList[1])
                     tokenList.add(token);
-                }
                 return true;
             }
         }

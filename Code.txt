@@ -4,6 +4,25 @@ a=a*100;
 print a;
 a=a-15;
 print a;
+a=10;
+if a==9{
+a=a+1;
+}
+else{
+a=a+2;
+};
+print a;
+LinkedList b;
+b ADD a;
+b ADD 15;
+c=1;
+b CONTAINS a;
+b CONTAINS c;
+a=a+1;
+b GET 1;
+b DELETE a;
+b DELETE 15;
+b CONTAINS a;
 i = 1;
 print a+100;
 a=5;
@@ -14,3 +33,21 @@ while i<a{
 for i<10;i=i+1{
     print i;
 };
+HashSet z;
+z ADD 15;
+z ADD 14;
+z ADD 13;
+z ADD 12;
+z ADD a;
+z CONTAINS a;
+z GET 4;
+z DELETE a;
+z CONTAINS a;
+PRINT z;
+PRINT b;
+HashSet y;
+PRINT y;
+CLEAR z;
+CLEAR b;
+PRINT z;
+PRINT b;

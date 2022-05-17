@@ -69,29 +69,56 @@ public class Parser {
         return leftVal;
     }
     public Node parseString(){
-       if (tokens.get(pos).type.typeName.equals("VAR")) {
-           Node varNode = parseVarNum();
-           Token assign = receive(new String[]{"ASSIGN"});
-           if (assign != null) {
-               Node rightVal = parseFormula();
-               return new BinOpNode(assign, varNode, rightVal);
-           }
-           throw new Error("После переменной ожидается = на позиции:"+pos);
-       }
-       else if (tokens.get(pos).type.typeName.equals("PRINT")){
-           pos++;
-           return new UnOpNode(tokens.get(pos-1), this.parseFormula());
-       }
-       else if(tokens.get(pos).type.typeName.equals("WHILE")){
-           pos++;
-           return  parseWhile();
-       }
-       else if(tokens.get(pos).type.typeName.equals("FOR"))
-       {
-           pos++;
-           return parseFor();
-       }
+        switch (tokens.get(pos).type.typeName) {
+            case "VAR":
+
+                Node varNode = parseVarNum();
+                Token operator = receive(new String[]{"ASSIGN", "ADD", "DELETE", "GET", "CONTAINS"});
+                if (operator != null) {
+                    Node rightVal = parseFormula();
+                    return new BinOpNode(operator, varNode, rightVal);
+                }
+                throw new Error("После переменной ожидается бинарный оператор на позиции:" + pos);
+            case "PRINT":
+            case "CLEAR":
+                pos++;
+                return new UnOpNode(tokens.get(pos - 1), this.parseFormula());
+            case "IF":
+                pos++;
+                return parseIf();
+            case "WHILE":
+                pos++;
+                return parseWhile();
+            case "FOR":
+                pos++;
+                return parseFor();
+            case "HASHSET":
+            case "LINKEDLIST":
+                return parseInit();
+        }
        throw new Error("Ошибка на позиции: "+pos+". Ожидалось действие или переменная");
+   }
+    public Node parseIf(){
+        Node leftVal=parseFormula();
+       Token operator=receive(new String[]{"LESS","MORE","EQUAL"});
+       Node rightVal=parseFormula();
+       IfNode ifNode=new IfNode(operator,leftVal,rightVal);
+       need(new String[]{"LRectPar"});
+       while(!tokens.get(pos).type.typeName.equals("RRectPAR")) {
+           ifNode.addThenOperations(getOperations());
+           if (pos==tokens.size())
+               throw new Error("Ошибка, ожидалось }");
+       }
+       pos++;
+       need(new String[]{"ELSE"});
+       need(new String[]{"LRectPar"});
+       while(!tokens.get(pos).type.typeName.equals("RRectPAR")) {
+           ifNode.addElseOperations(getOperations());
+           if (pos==tokens.size())
+               throw new Error("Ошибка, ожидалось }");
+       }
+       pos++;
+       return ifNode;
    }
     public Node parseFor(){
        Node leftVal=parseFormula();
@@ -129,6 +156,11 @@ public class Parser {
         }
         pos++;
         return whileNode;
+    }
+    public Node parseInit(){
+        Token type=receive(new String[]{"HASHSET","LINKEDLIST"});
+        Node var=parseVarNum();
+        return new InitNode(type,var);
     }
     public Node getOperations(){
         Node codeStringNode=parseString();
